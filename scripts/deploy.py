@@ -13,6 +13,7 @@ def cli(ecosystem, network, provider):
 
     # Access chain and other managers automatically
     from ape import chain
+
     click.echo(f"Current chain id: {chain.chain_id}")
 
     deployer = accounts.load(os.getenv("DEPLOYER"))

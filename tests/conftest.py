@@ -1,5 +1,4 @@
 import pytest
-import ape
 
 
 @pytest.fixture(scope="session")
