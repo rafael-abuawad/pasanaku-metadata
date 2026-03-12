@@ -1,9 +1,9 @@
 [project]
-name = "metadta"
+name = "pasanaku-metadata"
 version = "0.1.0"
-description = "Add your description here"
+description = "Simple Solidity contract to generate token URIs for Pasanaku"
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = "==3.13.0"
 dependencies = [
     "eth-ape>=0.8.48",
     "ruff>=0.15.5",
