@@ -16,6 +16,7 @@ wheels/
 # Ape
 .build/
 .pytest_cache/
+contracts/.cache/
 flattened/*.sol
 
 # Cursor
