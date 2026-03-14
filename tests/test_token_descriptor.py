@@ -40,7 +40,24 @@ def get_attribute(metadata: dict, trait_type: str):
 # ---------------------------------------------------------------------------
 
 
+class TestLayouts:
+    def test_layout_a(self, make_rotating_savings, layout_a):
+        uri = layout_a.layout(make_rotating_savings())
+        assert uri.startswith(IMAGE_URI_PREFIX)
+
+    def test_layout_b(self, make_rotating_savings, layout_b):
+        uri = layout_b.layout(make_rotating_savings())
+        assert uri.startswith(IMAGE_URI_PREFIX)
+
+
 class TestOutputFormat:
+    def test_returns_data_uri(self, token_descriptor, make_rotating_savings):
+        uri = token_descriptor.tokenURI(1, make_rotating_savings())
+        assert uri.startswith(DATA_URI_PREFIX)
+        metadata = decode_token_uri(uri)
+        assert isinstance(metadata, dict)
+        print(uri)
+
     def test_returns_data_uri_prefix(self, token_descriptor, make_rotating_savings):
         uri = token_descriptor.tokenURI(1, make_rotating_savings())
         assert uri.startswith(DATA_URI_PREFIX)

@@ -4,28 +4,24 @@ pragma solidity ^0.8.30;
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
+import {RotatingSavings} from "./interfaces/IRotatingSavings.sol";
+import {ILayout} from "./interfaces/ILayout.sol";
 
 contract TokenDescriptor {
     using Strings for uint256;
 
-    struct RotatingSavings {
-        address[] participants;
-        address asset;
-        uint256 amount;
-        uint256 currentIndex;
-        uint256 totalDeposited;
-        uint256 tokenId;
-        bool ended;
-        bool recovered;
-        address creator;
-        uint256 createdAt;
-        uint256 lastUpdatedAt;
+    ILayout public immutable layoutA;
+    ILayout public immutable layoutB;
+
+    constructor(address _layoutA, address _layoutB) {
+        layoutA = ILayout(_layoutA);
+        layoutB = ILayout(_layoutB);
     }
 
     function tokenURI(
         uint256 tokenId,
         RotatingSavings memory rotatingSavings
-    ) public pure returns (string memory) {
+    ) public view returns (string memory) {
         string memory imageURI = _imageURI(rotatingSavings);
 
         string memory dataURI = string.concat(
@@ -76,7 +72,10 @@ contract TokenDescriptor {
             );
     }
 
-    function _imageURI(RotatingSavings memory rotatingSavings) private pure returns (string memory) {
-        return string.concat("data:image/svg+xml;base64,");
+    function _imageURI(RotatingSavings memory rotatingSavings) private view returns (string memory) {
+        if (rotatingSavings.ended) {
+            return layoutB.layout(rotatingSavings);
+        }
+        return layoutA.layout(rotatingSavings);
     }
 }
