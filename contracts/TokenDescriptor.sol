@@ -10,18 +10,15 @@ import {ILayout} from "./interfaces/ILayout.sol";
 contract TokenDescriptor {
     using Strings for uint256;
 
-    ILayout public immutable layoutA;
-    ILayout public immutable layoutB;
+    ILayout public immutable layoutEnded;
+    ILayout public immutable layoutOngoing;
 
-    constructor(address _layoutA, address _layoutB) {
-        layoutA = ILayout(_layoutA);
-        layoutB = ILayout(_layoutB);
+    constructor(address _layoutEnded, address _layoutOngoing) {
+        layoutEnded = ILayout(_layoutEnded);
+        layoutOngoing = ILayout(_layoutOngoing);
     }
 
-    function tokenURI(
-        uint256 tokenId,
-        RotatingSavings memory rotatingSavings
-    ) public view returns (string memory) {
+    function tokenURI(uint256 tokenId, RotatingSavings memory rotatingSavings) public view returns (string memory) {
         string memory imageURI = _imageURI(rotatingSavings);
 
         string memory dataURI = string.concat(
@@ -38,10 +35,10 @@ contract TokenDescriptor {
             '"},',
             '{"trait_type": "Ended", "value": ',
             rotatingSavings.ended ? "true" : "false",
-            '},',
+            "},",
             '{"trait_type": "Recovered", "value": ',
             rotatingSavings.recovered ? "true" : "false",
-            '},',
+            "},",
             '{"trait_type": "Creator", "value": "',
             Strings.toHexString(uint256(uint160(rotatingSavings.creator)), 20),
             '"},',
@@ -62,20 +59,15 @@ contract TokenDescriptor {
             '"},',
             '{"trait_type": "Token ID", "value": "',
             tokenId.toString(),
-            '"}'
-            ']}'
+            '"}' "]}"
         );
-        return
-            string.concat(
-                "data:application/json;base64,",
-                Base64.encode(bytes(dataURI))
-            );
+        return string.concat("data:application/json;base64,", Base64.encode(bytes(dataURI)));
     }
 
     function _imageURI(RotatingSavings memory rotatingSavings) private view returns (string memory) {
         if (rotatingSavings.ended) {
-            return layoutB.layout(rotatingSavings);
+            return layoutEnded.layout(rotatingSavings);
         }
-        return layoutA.layout(rotatingSavings);
+        return layoutOngoing.layout(rotatingSavings);
     }
 }

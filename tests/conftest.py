@@ -7,31 +7,43 @@ def deployer(accounts):
 
 
 @pytest.fixture(scope="session")
-def layout_a(deployer, project):
-    return deployer.deploy(project.LayoutA)
+def erc20_mock(deployer, project):
+    return deployer.deploy(project.ERC20Mock, deployer.address)
 
 
 @pytest.fixture(scope="session")
-def layout_b(deployer, project):
-    return deployer.deploy(project.LayoutB)
+def layout_ongoing(deployer, project):
+    return deployer.deploy(project.LayoutOngoing)
 
 
 @pytest.fixture(scope="session")
-def token_descriptor(deployer, project, layout_a, layout_b):
-    return deployer.deploy(project.TokenDescriptor, layout_a.address, layout_b.address)
+def layout_ended(deployer, project):
+    return deployer.deploy(project.LayoutEnded)
+
+
+@pytest.fixture(scope="session")
+def token_descriptor(
+    deployer,
+    project,
+    layout_ended,
+    layout_ongoing,
+):
+    return deployer.deploy(
+        project.TokenDescriptor, layout_ended.address, layout_ongoing.address
+    )
 
 
 @pytest.fixture
-def make_rotating_savings(accounts):
+def make_rotating_savings(accounts, erc20_mock):
     """Factory fixture that returns a default RotatingSavings dict with keyword overrides."""
 
     def _factory(**overrides):
         defaults = {
             "participants": [accounts[0].address, accounts[1].address],
-            "asset": accounts[2].address,
-            "amount": 1_000_000_000_000_000_000,
+            "asset": erc20_mock.address,
+            "amount": int(100.50 * 10**18),
             "currentIndex": 1,
-            "totalDeposited": 2_000_000_000_000_000_000,
+            "totalDeposited": int(100.50 * 10**18),
             "tokenId": 1,
             "ended": False,
             "recovered": False,

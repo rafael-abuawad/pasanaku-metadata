@@ -10,7 +10,6 @@ load_dotenv()
 
 @click.command(cls=ConnectedProviderCommand)
 def cli(ecosystem, network, provider):
-
     # Access chain and other managers automatically
     from ape import chain
 
