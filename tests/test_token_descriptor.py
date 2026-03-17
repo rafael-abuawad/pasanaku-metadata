@@ -43,17 +43,18 @@ def get_attribute(metadata: dict, trait_type: str):
 
 class TestOutputFormat:
     def test_returns_data_uri(self, token_descriptor, make_rotating_savings):
-        uri = token_descriptor.tokenURI(1, make_rotating_savings())
+        uri = token_descriptor.tokenURI(make_rotating_savings())
         assert uri.startswith(DATA_URI_PREFIX)
         metadata = decode_token_uri(uri)
         assert isinstance(metadata, dict)
 
     def test_returns_data_uri_prefix(self, token_descriptor, make_rotating_savings):
-        uri = token_descriptor.tokenURI(1, make_rotating_savings())
+        uri = token_descriptor.tokenURI(make_rotating_savings())
+        print(uri)
         assert uri.startswith(DATA_URI_PREFIX)
 
     def test_is_valid_base64_json(self, token_descriptor, make_rotating_savings):
-        uri = token_descriptor.tokenURI(1, make_rotating_savings())
+        uri = token_descriptor.tokenURI(make_rotating_savings())
         metadata = decode_token_uri(uri)
         assert isinstance(metadata, dict)
 
@@ -66,13 +67,13 @@ class TestOutputFormat:
 class TestTopLevelFields:
     def test_name_contains_token_id(self, token_descriptor, make_rotating_savings):
         metadata = decode_token_uri(
-            token_descriptor.tokenURI(1, make_rotating_savings())
+            token_descriptor.tokenURI(make_rotating_savings())
         )
         assert metadata["name"] == "Pasanaku #1"
 
     def test_description_is_correct(self, token_descriptor, make_rotating_savings):
         metadata = decode_token_uri(
-            token_descriptor.tokenURI(1, make_rotating_savings())
+            token_descriptor.tokenURI(make_rotating_savings())
         )
         assert (
             metadata["description"]
@@ -81,13 +82,13 @@ class TestTopLevelFields:
 
     def test_image_field_prefix(self, token_descriptor, make_rotating_savings):
         metadata = decode_token_uri(
-            token_descriptor.tokenURI(1, make_rotating_savings())
+            token_descriptor.tokenURI(make_rotating_savings())
         )
         assert metadata["image"].startswith(IMAGE_URI_PREFIX)
 
     def test_all_attributes_present(self, token_descriptor, make_rotating_savings):
         metadata = decode_token_uri(
-            token_descriptor.tokenURI(1, make_rotating_savings())
+            token_descriptor.tokenURI(make_rotating_savings())
         )
         actual_traits = [a["trait_type"] for a in metadata["attributes"]]
         assert actual_traits == EXPECTED_TRAIT_TYPES
@@ -101,39 +102,39 @@ class TestTopLevelFields:
 class TestAttributeValues:
     def test_total_deposited(self, token_descriptor, make_rotating_savings):
         savings = make_rotating_savings(totalDeposited=5_000)
-        metadata = decode_token_uri(token_descriptor.tokenURI(1, savings))
+        metadata = decode_token_uri(token_descriptor.tokenURI(savings))
         assert get_attribute(metadata, "Total Deposited") == "5000"
 
     def test_current_index(self, token_descriptor, make_rotating_savings):
         savings = make_rotating_savings(currentIndex=3)
-        metadata = decode_token_uri(token_descriptor.tokenURI(1, savings))
+        metadata = decode_token_uri(token_descriptor.tokenURI(savings))
         assert get_attribute(metadata, "Current Index") == "3"
 
     def test_ended_false(self, token_descriptor, make_rotating_savings):
         savings = make_rotating_savings(ended=False)
-        metadata = decode_token_uri(token_descriptor.tokenURI(1, savings))
+        metadata = decode_token_uri(token_descriptor.tokenURI(savings))
         assert get_attribute(metadata, "Ended") is False
 
     def test_ended_true(self, token_descriptor, make_rotating_savings):
         savings = make_rotating_savings(ended=True)
-        metadata = decode_token_uri(token_descriptor.tokenURI(1, savings))
+        metadata = decode_token_uri(token_descriptor.tokenURI(savings))
         assert get_attribute(metadata, "Ended") is True
 
     def test_recovered_false(self, token_descriptor, make_rotating_savings):
         savings = make_rotating_savings(recovered=False)
-        metadata = decode_token_uri(token_descriptor.tokenURI(1, savings))
+        metadata = decode_token_uri(token_descriptor.tokenURI(savings))
         assert get_attribute(metadata, "Recovered") is False
 
     def test_recovered_true(self, token_descriptor, make_rotating_savings):
         savings = make_rotating_savings(recovered=True)
-        metadata = decode_token_uri(token_descriptor.tokenURI(1, savings))
+        metadata = decode_token_uri(token_descriptor.tokenURI(savings))
         assert get_attribute(metadata, "Recovered") is True
 
     def test_creator_address_hex_format(
         self, token_descriptor, make_rotating_savings, accounts
     ):
         savings = make_rotating_savings(creator=accounts[0].address)
-        metadata = decode_token_uri(token_descriptor.tokenURI(1, savings))
+        metadata = decode_token_uri(token_descriptor.tokenURI(savings))
         creator = get_attribute(metadata, "Creator")
         assert creator.startswith("0x")
         assert len(creator) == 42
@@ -141,12 +142,12 @@ class TestAttributeValues:
 
     def test_created_at(self, token_descriptor, make_rotating_savings):
         savings = make_rotating_savings(createdAt=1_700_000_000)
-        metadata = decode_token_uri(token_descriptor.tokenURI(1, savings))
+        metadata = decode_token_uri(token_descriptor.tokenURI(savings))
         assert get_attribute(metadata, "Created At") == "1700000000"
 
     def test_last_updated_at(self, token_descriptor, make_rotating_savings):
         savings = make_rotating_savings(lastUpdatedAt=1_700_100_000)
-        metadata = decode_token_uri(token_descriptor.tokenURI(1, savings))
+        metadata = decode_token_uri(token_descriptor.tokenURI(savings))
         assert get_attribute(metadata, "Last Updated At") == "1700100000"
 
     def test_participants_count(
@@ -155,7 +156,7 @@ class TestAttributeValues:
         savings = make_rotating_savings(
             participants=[accounts[0].address, accounts[1].address, accounts[2].address]
         )
-        metadata = decode_token_uri(token_descriptor.tokenURI(1, savings))
+        metadata = decode_token_uri(token_descriptor.tokenURI(savings))
         assert get_attribute(metadata, "Participants") == "3"
 
     def test_asset_address_hex_format(
@@ -163,7 +164,7 @@ class TestAttributeValues:
     ):
         # Use erc20_mock: Layout calls IERC20Metadata(asset) which requires a contract
         savings = make_rotating_savings(asset=erc20_mock.address)
-        metadata = decode_token_uri(token_descriptor.tokenURI(1, savings))
+        metadata = decode_token_uri(token_descriptor.tokenURI(savings))
         asset = get_attribute(metadata, "Asset")
         assert asset.startswith("0x")
         assert len(asset) == 42
@@ -171,14 +172,14 @@ class TestAttributeValues:
 
     def test_amount(self, token_descriptor, make_rotating_savings):
         savings = make_rotating_savings(amount=999)
-        metadata = decode_token_uri(token_descriptor.tokenURI(1, savings))
+        metadata = decode_token_uri(token_descriptor.tokenURI(savings))
         assert get_attribute(metadata, "Amount") == "999"
 
     def test_token_id_attribute_matches_input(
         self, token_descriptor, make_rotating_savings
     ):
         metadata = decode_token_uri(
-            token_descriptor.tokenURI(42, make_rotating_savings())
+            token_descriptor.tokenURI(make_rotating_savings(tokenId=42))
         )
         assert get_attribute(metadata, "Token ID") == "42"
 
@@ -191,40 +192,39 @@ class TestAttributeValues:
 class TestEdgeCases:
     def test_token_id_zero(self, token_descriptor, make_rotating_savings):
         metadata = decode_token_uri(
-            token_descriptor.tokenURI(0, make_rotating_savings())
+            token_descriptor.tokenURI(make_rotating_savings(tokenId=0))
         )
         assert metadata["name"] == "Pasanaku #0"
         assert get_attribute(metadata, "Token ID") == "0"
 
     def test_large_token_id(self, token_descriptor, make_rotating_savings):
-        large_id = 2**128
+        savings = make_rotating_savings()
         metadata = decode_token_uri(
-            token_descriptor.tokenURI(large_id, make_rotating_savings())
+            token_descriptor.tokenURI(savings)
         )
-        assert metadata["name"] == f"Pasanaku #{large_id}"
-        assert get_attribute(metadata, "Token ID") == str(large_id)
+        assert metadata["name"] == f"Pasanaku #{savings['tokenId']}"
+        assert get_attribute(metadata, "Token ID") == str(savings["tokenId"])
 
     def test_multiple_participants(
         self, token_descriptor, make_rotating_savings, accounts
     ):
         participants = [accounts[i].address for i in range(5)]
         savings = make_rotating_savings(participants=participants)
-        metadata = decode_token_uri(token_descriptor.tokenURI(1, savings))
+        metadata = decode_token_uri(token_descriptor.tokenURI(savings))
         assert get_attribute(metadata, "Participants") == "5"
 
     def test_empty_participants(self, token_descriptor, make_rotating_savings):
         # Empty participants causes underflow in both layouts; expect revert
         savings = make_rotating_savings(participants=[], ended=False)
         with pytest.raises(Exception):
-            token_descriptor.tokenURI(1, savings)
+            token_descriptor.tokenURI(savings)
 
     def test_zero_amounts(self, token_descriptor, make_rotating_savings):
-        # Use ended=False so contract receives ended=true (LayoutEnded), avoiding
-        # division by zero in LayoutOngoing
+        # Use ended=True so LayoutEnded is used, avoiding division by zero in LayoutOngoing
         savings = make_rotating_savings(
-            amount=0, totalDeposited=0, currentIndex=0, ended=False
+            amount=0, totalDeposited=0, currentIndex=0, ended=True
         )
-        metadata = decode_token_uri(token_descriptor.tokenURI(1, savings))
+        metadata = decode_token_uri(token_descriptor.tokenURI(savings))
         assert get_attribute(metadata, "Amount") == "0"
         assert get_attribute(metadata, "Total Deposited") == "0"
         assert get_attribute(metadata, "Current Index") == "0"
@@ -232,9 +232,10 @@ class TestEdgeCases:
     def test_different_token_ids_produce_different_names(
         self, token_descriptor, make_rotating_savings
     ):
-        savings = make_rotating_savings()
-        meta_a = decode_token_uri(token_descriptor.tokenURI(1, savings))
-        meta_b = decode_token_uri(token_descriptor.tokenURI(2, savings))
+        savings_a = make_rotating_savings(tokenId=1)
+        savings_b = make_rotating_savings(tokenId=2)
+        meta_a = decode_token_uri(token_descriptor.tokenURI(savings_a))
+        meta_b = decode_token_uri(token_descriptor.tokenURI(savings_b))
         assert meta_a["name"] != meta_b["name"]
         assert meta_a["name"] == "Pasanaku #1"
         assert meta_b["name"] == "Pasanaku #2"
@@ -242,5 +243,5 @@ class TestEdgeCases:
     def test_pure_function_no_sender_required(
         self, token_descriptor, make_rotating_savings
     ):
-        uri = token_descriptor.tokenURI(1, make_rotating_savings())
+        uri = token_descriptor.tokenURI(make_rotating_savings())
         assert uri.startswith(DATA_URI_PREFIX)

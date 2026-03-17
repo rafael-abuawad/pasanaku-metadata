@@ -18,12 +18,12 @@ contract TokenDescriptor {
         layoutOngoing = ILayout(_layoutOngoing);
     }
 
-    function tokenURI(uint256 tokenId, RotatingSavings memory rotatingSavings) public view returns (string memory) {
+    function tokenURI(RotatingSavings memory rotatingSavings) public view returns (string memory) {
         string memory imageURI = _imageURI(rotatingSavings);
 
         string memory dataURI = string.concat(
             '{"name": "Pasanaku #',
-            tokenId.toString(),
+            rotatingSavings.tokenId.toString(),
             '", "description": "A rotating savings protocol onchain, deployed on the Arbitrum network.", "image": "',
             imageURI,
             '", "attributes": [',
@@ -58,7 +58,7 @@ contract TokenDescriptor {
             rotatingSavings.amount.toString(),
             '"},',
             '{"trait_type": "Token ID", "value": "',
-            tokenId.toString(),
+            rotatingSavings.tokenId.toString(),
             '"}' "]}"
         );
         return string.concat("data:application/json;base64,", Base64.encode(bytes(dataURI)));

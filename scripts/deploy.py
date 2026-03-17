@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+ANVIL_CHAIN_ID = 31337
+
 
 @click.command(cls=ConnectedProviderCommand)
 def cli(ecosystem, network, provider):
@@ -16,5 +18,11 @@ def cli(ecosystem, network, provider):
     click.echo(f"Current chain id: {chain.chain_id}")
 
     deployer = accounts.load(os.getenv("DEPLOYER"))
-    token_descriptor = project.TokenDescriptor.deploy(sender=deployer)
+    if chain.chain_id == ANVIL_CHAIN_ID:
+        deployer.balance = int(100*10**18)
+
+    layout_ended = project.LayoutEnded.deploy(sender=deployer)
+    layout_ongoing = project.LayoutOngoing.deploy(sender=deployer)
+
+    token_descriptor = project.TokenDescriptor.deploy(layout_ended.address, layout_ongoing.address, sender=deployer)
     return token_descriptor
